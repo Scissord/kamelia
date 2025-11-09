@@ -1,0 +1,62 @@
+Заходим в микросервис:
+cd ./auth-microservice
+
+Сбилдить микросервис:
+docker build -t auth-microservice .
+
+Запустить микросервис:
+docker run -d -p 3001:3001 --name auth-microservice auth-microservice
+
+Дальше его нужно удалить
+Я делал через docker-desktop
+
+Запускаем миграцию базы данных для kong:
+docker-compose up -d kong-db
+
+Пишем конфиг, учитывая сеть которая создалась при миграции данных:
+docker network ls
+
+PS C:\Users\KaZakH_CrUsADeR\Projects\nurdaulet> docker network ls
+NETWORK ID     NAME                 DRIVER    SCOPE
+acdb3602493f   bridge               bridge    local
+2f772252ad6f   host                 host      local
+b08301753a25   none                 null      local
+2d99d8e3f842   nurdaulet_kong-net   bridge    local -- ВОТ ЭТА НАШ ВАРИАНТ
+
+Запускаем миграции kong:
+docker run --rm --network=nurdaulet_kong-net \
+  -e "KONG_DATABASE=postgres" \
+  -e "KONG_PG_HOST=kong-db" \
+  -e "KONG_PG_USER=kong" \
+  -e "KONG_PG_PASSWORD=kongpass" \
+  kong:latest kong migrations bootstrap
+
+Если не вставляется в терминал:
+1. Создаём migrate-kong.sh
+2. Вставляем скрипт туда
+3. Запускаем git bash
+4. bash migrate-kong.sh
+
+Дальше делаем все контейнеры:
+docker-compose up -d
+
+Дальше информация по регистрации микросервиса в kong:
+1) Создаём сервис
+Добавить сюда tags
+curl.exe -i -X POST http://localhost:8001/services \
+  --data "name=auth-microservice" \
+  --data "url=http://auth-microservice:3001"
+
+Ожидается - HTTP/1.1 201 Created
+
+2) Создаём маршрут к этому сервису
+Добавить сюда name
+Добавить сюда tags
+curl.exe -i -X POST http://localhost:8001/services/auth-microservice/routes \
+  --data "paths[]=/auth"
+
+Ожидается - HTTP/1.1 201 Created
+
+Доступ к админке в проде:
+ssh -L 8001:localhost:8001 user@ip
+Через это будем делать Admin GUI

@@ -1,0 +1,97 @@
+services:
+  kong-db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kongpass
+    ports:
+      - "5433:5432"
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+    networks:
+      - kong-net
+
+  kong:
+    image: kong:3.9.1
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kongpass
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_ADMIN_GUI_URL: http://localhost:8002
+    ports:
+      - "8000:8000" # Прокси (для API) / Сюда будет отправлять запросы клиент
+      - "8443:8443" # Прокси HTTPS
+      - "8001:8001" # Admin API / Кидать сюда curl-ы
+      - "8002:8002" # Admin GUI
+    depends_on:
+      - kong-db
+    networks:
+      - kong-net
+
+  # rabbitmq:
+  #   image: rabbitmq:4.1.3-management
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: guest
+  #     RABBITMQ_DEFAULT_PASS: guest
+  #   ports:
+  #     - "5672:5672" # AMQP порт для общения микросервисов
+  #     - "15672:15672" # Порт для Management UI
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq
+  #   networks:
+  #     - kong-net
+
+  auth-microservice:
+    image: auth-microservice
+    build:
+      context: ./auth-microservice
+    env_file:
+      - ./auth-microservice/.env
+    ports:
+      - "3001:3001"
+    depends_on:
+      - commercial-db
+      # - rabbitmq
+    networks:
+      - kong-net
+
+  commercial-db:
+    image: postgres:17
+    env_file:
+      - ./commercial-db/.env
+    ports:
+      - "5434:5432"
+    volumes:
+      - commercial_data:/var/lib/postgresql/data
+      - ./commercial-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kong-net
+
+  internal-db:
+    image: postgres:17
+    env_file:
+      - ./internal-db/.env
+    ports:
+      - "5436:5432"
+    volumes:
+      - internal_data:/var/lib/postgresql/data
+      - ./internal-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kong-net
+
+networks:
+  kong-net:
+    driver: bridge
+
+volumes:
+  kong_data:
+  commercial_data:
+  internal_data:
+  rabbitmq_data:

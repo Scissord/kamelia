@@ -1,0 +1,33 @@
+services:
+  app:
+    build: .
+    container_name: auth-microservice
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - kamelia-net
+
+  db:
+    image: postgres:17
+    container_name: user-db
+    env_file:
+      - .env
+    ports:
+      - "6000:5432"
+    volumes:
+      - user-db:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - kamelia-net
+
+networks:
+  kamelia-net:
+    driver: bridge
+
+volumes:
+  user-db:

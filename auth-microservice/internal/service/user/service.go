@@ -2,8 +2,11 @@ package user
 
 import (
 	"errors"
+	"strings"
 
 	repo "auth-microservice/internal/repository/user"
+	types "auth-microservice/internal/schema/user"
+	utils "auth-microservice/internal/utils"
 )
 
 type Service struct {
@@ -12,6 +15,43 @@ type Service struct {
 
 func NewService(r *repo.Repository) *Service {
 	return &Service{repo: r}
+}
+
+func (s *Service) Registration(input types.RegistrationInput) (*repo.User, error) {
+	input.Login = strings.TrimSpace(input.Login)
+	input.Password = strings.TrimSpace(input.Password)
+
+	// 1. Validation registration
+	if err := s.ValidateRegistration(input); err != nil {
+		return nil, err
+	}
+
+	// 2. Validate if exist
+	existing, err := s.repo.FindByLogin(input.Login)
+	if err != nil {
+		return nil, err
+	}
+	if existing != nil {
+		return nil, errors.New("user already exists")
+	}
+
+	// 3. Hash password
+	hashedPassword, err := utils.HashPassword(input.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	// 4. Create user
+	user := &repo.User{
+		Login:        input.Login,
+		PasswordHash: string(hashedPassword),
+	}
+
+	if err := s.repo.Create(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (s *Service) FindByLogin(login string) error {

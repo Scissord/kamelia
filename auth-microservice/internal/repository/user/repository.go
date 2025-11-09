@@ -25,7 +25,7 @@ func (r *Repository) FindByLogin(login string) (*User, error) {
 	`, login).Scan(&user.ID, &user.Login, &user.PasswordHash)
 
 	if err == sql.ErrNoRows {
-		return nil, nil // пользователь не найден
+		return nil, nil
 	}
 
 	return &user, err

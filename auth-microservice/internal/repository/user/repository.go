@@ -31,17 +31,25 @@ func (r *Repository) FindByLogin(login string) (*User, error) {
 	return &user, err
 }
 
-func (r *Repository) Create(user *User) error {
+func (r *Repository) Create(user *User) (*User, error) {
 	query := `
-		INSERT INTO auth."user" (
-			login,
-			password_hash
-		)
-		VALUES (
-		 	$1, $2
-		)
-		RETURNING id
-	`
+        INSERT INTO auth."user" (
+            login,
+            password_hash
+        )
+        VALUES ($1, $2)
+        RETURNING id, login, created_at
+    `
 
-	return r.DB.QueryRow(query, user.Login, user.PasswordHash).Scan(&user.ID)
+	err := r.DB.QueryRow(query, user.Login, user.PasswordHash).Scan(
+		&user.ID,
+		&user.Login,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

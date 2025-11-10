@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	repo "auth-microservice/internal/repository/user"
-	types "auth-microservice/internal/schema/user"
+	types "auth-microservice/internal/schema/auth"
 	utils "auth-microservice/internal/utils"
 )
 
@@ -47,11 +47,12 @@ func (s *Service) Registration(input types.RegistrationInput) (*repo.User, error
 		PasswordHash: string(hashedPassword),
 	}
 
-	if err := s.repo.Create(user); err != nil {
+	createdUser, err := s.repo.Create(user)
+	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return createdUser, nil
 }
 
 func (s *Service) FindByLogin(login string) error {
@@ -63,8 +64,4 @@ func (s *Service) FindByLogin(login string) error {
 		return errors.New("user already exists")
 	}
 	return nil
-}
-
-func (s *Service) Create(user *repo.User) error {
-	return s.repo.Create(user)
 }

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	user "auth-microservice/internal/http/user"
+	auth "auth-microservice/internal/http/auth"
 
 	"github.com/gorilla/mux"
 )
@@ -18,7 +18,7 @@ func NewRouter(db *sql.DB) *mux.Router {
 	r := mux.NewRouter()
 
 	modules := []Module{
-		user.NewModule(db),
+		auth.NewModule(db),
 	}
 
 	for _, m := range modules {

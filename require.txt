@@ -57,7 +57,7 @@
 Написать тесты (unit, integration).
 Добавить документацию и Swagger UI.
 
-1. Marketplace / E-commerce backend (реалистичный, комплексный)
+1. Marketplace / E-commerce auth-microservice (реалистичный, комплексный)
 Описание:
 Платформа, где есть пользователи (клиенты, продавцы), товары, заказы, платежи, уведомления.
 Разделение на микросервисы: users, products, orders, payments, notifications.

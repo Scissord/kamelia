@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"backend/internal/client/dto"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -8,10 +9,28 @@ import (
 )
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
-	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	var q dto.GetClientsQuery
 
-	clients, err := h.service.List(context.Background(), limit, page)
+	if v := r.URL.Query().Get("limit"); v != "" {
+		q.Limit, _ = strconv.Atoi(v)
+	}
+
+	// Парсим page
+	if v := r.URL.Query().Get("page"); v != "" {
+		q.Page, _ = strconv.Atoi(v)
+	}
+
+	// Парсим sort
+	if v := r.URL.Query().Get("sort"); v != "" {
+		q.Sort = &v
+	}
+
+	if err := validate.Struct(q); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	clients, err := h.service.List(context.Background(), q)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

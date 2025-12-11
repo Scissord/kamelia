@@ -6,10 +6,11 @@ import (
 	"backend/internal/client/dto"
 	"backend/internal/client/model"
 	"backend/internal/client/repository"
+	"backend/internal/utils"
 )
 
 type Service interface {
-	List(ctx context.Context, limit int, page int) ([]model.Client, error)
+	List(ctx context.Context, q dto.GetClientsQuery) ([]model.Client, error)
 	GetByID(ctx context.Context, id uint) (*model.Client, error)
 	Create(ctx context.Context, c *dto.CreateClientDTO) (*model.Client, error)
 }
@@ -22,18 +23,34 @@ func NewService(repo repository.Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) List(ctx context.Context, limit int, page int) ([]model.Client, error) {
-	if page < 1 {
-		page = 1
+func (s *service) List(ctx context.Context, q dto.GetClientsQuery) ([]model.Client, error) {
+	if q.Page < 1 {
+		q.Page = 1
 	}
 
-	if limit < 1 {
-		limit = 20
+	if q.Limit < 1 {
+		q.Limit = 20
 	}
 
-	offset := (page - 1) * limit
+	offset := (q.Page - 1) * q.Limit
 
-	return s.repo.List(ctx, limit, offset)
+	allowedSorts := map[string]string{
+		"id asc":          "id ASC",
+		"id desc":         "id DESC",
+		"created_at asc":  "created_at ASC",
+		"created_at desc": "created_at DESC",
+	}
+
+	sort := "created_at DESC"
+
+	if q.Sort != nil {
+		normalized := utils.NormalizeSort(*q.Sort)
+		if v, ok := allowedSorts[normalized]; ok {
+			sort = v
+		}
+	}
+
+	return s.repo.List(ctx, q.Limit, offset, sort)
 }
 
 func (s *service) GetByID(ctx context.Context, id uint) (*model.Client, error) {

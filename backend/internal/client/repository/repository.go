@@ -8,24 +8,24 @@ import (
 	"gorm.io/gorm"
 )
 
-type Repository interface {
-	List(ctx context.Context, limit int, offset int) ([]model.Client, error)
-	GetByID(ctx context.Context, id uint) (*model.Client, error)
-	Create(ctx context.Context, client *model.Client) error
-}
-
 type repository struct {
 	db *gorm.DB
+}
+
+type Repository interface {
+	List(ctx context.Context, limit int, offset int, sort string) ([]model.Client, error)
+	GetByID(ctx context.Context, id uint) (*model.Client, error)
+	Create(ctx context.Context, client *model.Client) error
 }
 
 func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) List(ctx context.Context, limit int, offset int) ([]model.Client, error) {
+func (r *repository) List(ctx context.Context, limit int, offset int, sort string) ([]model.Client, error) {
 	var clients []model.Client
 	err := r.db.WithContext(ctx).
-		Order("id DESC").
+		Order(sort).
 		Limit(limit).
 		Offset(offset).
 		Find(&clients).

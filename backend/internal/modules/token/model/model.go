@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type User struct {
+type Token struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	Name      string         `gorm:"size:255;not null" json:"name"`
 	Email     string         `gorm:"size:255;uniqueIndex;not null" json:"email"`
@@ -17,6 +17,6 @@ type User struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"` // для soft delete
 }
 
-func (User) TableName() string {
-	return "auth.profile"
+func (Token) TableName() string {
+	return "auth.token"
 }

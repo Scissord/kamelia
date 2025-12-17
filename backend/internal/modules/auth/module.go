@@ -1,9 +1,9 @@
 package client
 
 import (
-	handler "backend/internal/client/handler"
-	repository "backend/internal/client/repository"
-	service "backend/internal/client/service"
+	handler "backend/internal/modules/auth/handler"
+	repository "backend/internal/modules/auth/repository"
+	service "backend/internal/modules/auth/service"
 
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
@@ -24,8 +24,7 @@ func NewModule(db *gorm.DB) *Module {
 func (m *Module) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/", m.Handler.List)
-	r.Post("/", m.Handler.Create)
+	r.Post("/registration", m.Handler.Registration)
 
 	return r
 }

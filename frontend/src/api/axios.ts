@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { useUserStore, useNotificationStore } from '@/store';
 import { useRefresh } from '@/api';
 
-export const baseUrl = 'localhost:8080';
+export const baseUrl = 'localhost:8080/api';
 
 export const api = axios.create({
   baseURL: baseUrl,

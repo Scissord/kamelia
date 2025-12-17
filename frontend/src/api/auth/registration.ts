@@ -1,20 +1,34 @@
-import { api } from '@/api';
 import { IUser, IRegistration } from '@/interfaces';
 
-interface RegistrationResult {
+interface IRegistrationResult {
   user: IUser | null;
   access_token: string | null;
 }
 
 export const useRegistration = async (
   data: IRegistration,
-): Promise<RegistrationResult> => {
+): Promise<IRegistrationResult> => {
   try {
-    const response = await api.post('/auth/registration', data);
+    const response = await fetch(
+      'http://localhost:8080/api/auth/registration',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error('Registration failed');
+    }
+
+    const result = await response.json();
 
     return {
-      user: response.data.user,
-      access_token: response.data.accessToken,
+      user: result.user,
+      access_token: result.accessToken,
     };
   } catch (error: unknown) {
     return {

@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"backend/internal/client/model"
+	"backend/internal/modules/client/model"
 
 	"gorm.io/gorm"
 )

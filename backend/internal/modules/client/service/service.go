@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"backend/internal/client/dto"
-	"backend/internal/client/model"
-	"backend/internal/client/repository"
+	"backend/internal/modules/client/dto"
+	"backend/internal/modules/client/model"
+	"backend/internal/modules/client/repository"
 	"backend/internal/utils"
 )
 

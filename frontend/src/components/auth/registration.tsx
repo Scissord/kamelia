@@ -15,7 +15,7 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from '@/components';
-import { useRegistration } from '@/api';
+import { AuthService } from '@/services';
 import { ChevronDownIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 
 const registrationSchema = z.object({
@@ -52,7 +52,7 @@ export const RegistrationForm = () => {
       const locale = navigator.language || navigator.languages[0] || 'ru';
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      const user = await useRegistration({
+      const user = await AuthService.registration({
         ...data,
         locale,
         timezone,

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"backend/internal/client/service"
+	"backend/internal/modules/client/service"
 
 	"github.com/go-playground/validator/v10"
 )

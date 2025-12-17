@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { Label, Input, Button, Checkbox } from '@/components';
 import { useLogin } from '@/api';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { AuthService } from '@/services';
 
 const loginSchema = z.object({
   login: z.string().min(3, 'Логин должен быть не менее 3 символов'),
@@ -29,7 +30,8 @@ export const LoginForm = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const user = await useLogin(data);
+      const user = await AuthService.login(data);
+
       console.log('Успешная авторизация', user);
     } catch (err) {
       console.error(err);

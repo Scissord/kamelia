@@ -1,7 +1,7 @@
 package migrations
 
 import (
-	client "backend/internal/client/model"
+	client "backend/internal/modules/client/model"
 
 	"gorm.io/gorm"
 )

@@ -1,23 +1,34 @@
-import { api } from '@/api';
 import { IUser, IUserLogin } from '@/interfaces';
 
 interface LoginResult {
   user: IUser | null;
-  accessToken: string | null;
+  access_token: string | null;
 }
 
 export const useLogin = async (data: IUserLogin): Promise<LoginResult> => {
   try {
-    const response = await api.post('/auth/login', data);
+    const response = await fetch('http://localhost:8080/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error('Login failed');
+    }
+
+    const result = await response.json();
 
     return {
-      user: response.data.user,
-      accessToken: response.data.accessToken,
+      user: result.user,
+      access_token: result.accessToken,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       user: null,
-      accessToken: null,
+      access_token: null,
     };
   }
 };

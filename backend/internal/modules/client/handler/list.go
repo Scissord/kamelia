@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"backend/internal/client/dto"
+	"backend/internal/modules/client/dto"
 	"context"
 	"encoding/json"
 	"net/http"

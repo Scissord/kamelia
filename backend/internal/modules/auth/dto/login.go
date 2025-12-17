@@ -1,8 +1,6 @@
 package dto
 
 type LoginUserDTO struct {
-	Name    string  `json:"name" validate:"required,min=2"`
-	Email   string  `json:"email" validate:"required,email"`
-	Phone   *string `json:"phone" validate:"omitempty"`
-	Address *string `json:"address" validate:"omitempty"`
+	Login    string `json:"login" validate:"required,min=2"`
+	Password string `json:"password" validate:"required,min=2"`
 }

@@ -26,6 +26,5 @@ func NewRepository(db *gorm.DB) Repository {
 // }
 
 func (r *repository) Registration(ctx context.Context, user *userModel.User) error {
-	// GORM автоматически заполняет user.ID после Create
 	return r.db.WithContext(ctx).Create(user).Error
 }

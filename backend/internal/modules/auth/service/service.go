@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	// profileModel "backend/internal/modules/profile/model"
 	userModel "backend/internal/modules/user/model"
 	"backend/internal/utils"
 
@@ -23,6 +24,9 @@ func NewService(repo repository.Repository) Service {
 }
 
 func (s *service) Registration(ctx context.Context, dto *dto.RegistrationUserDTO) (*userModel.User, error) {
+
+	// Тут валидация на дублирование логина, телефона и.т.д
+	// Заполняем auth.user
 	hashedPassword, err := utils.HashPassword(dto.Password)
 	if err != nil {
 		return nil, err
@@ -38,4 +42,9 @@ func (s *service) Registration(ctx context.Context, dto *dto.RegistrationUserDTO
 		return nil, err
 	}
 	return &user, nil
+
+	// Заполняем profile
+	// profile := profileModel.Profile{
+
+	// }
 }

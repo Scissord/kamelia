@@ -52,27 +52,15 @@ export const RegistrationForm = () => {
       const locale = navigator.language || navigator.languages[0] || 'ru';
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      console.log('Отправка данных регистрации:', {
-        ...data,
-        locale,
-        timezone,
-      });
-
       const user = await AuthService.registration({
         ...data,
         locale,
         timezone,
       });
 
-      console.log('Результат регистрации:', user);
-
-      if (user.user) {
-        console.log('Успешная регистрация!', user);
-      } else {
-        console.error('Регистрация не удалась - user is null');
-      }
+      console.log('Успешная регистрация', user);
     } catch (err) {
-      console.error('Ошибка при регистрации:', err);
+      console.error(err);
     }
   };
 

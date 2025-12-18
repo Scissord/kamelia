@@ -14,13 +14,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	if v := r.URL.Query().Get("limit"); v != "" {
 		q.Limit, _ = strconv.Atoi(v)
 	}
-
-	// Парсим page
 	if v := r.URL.Query().Get("page"); v != "" {
 		q.Page, _ = strconv.Atoi(v)
 	}
-
-	// Парсим sort
 	if v := r.URL.Query().Get("sort"); v != "" {
 		q.Sort = &v
 	}
@@ -37,8 +33,5 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(clients); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(clients)
 }

@@ -13,6 +13,8 @@ type Service interface {
 	List(ctx context.Context, q dto.GetClientsQuery) ([]model.Client, error)
 	GetByID(ctx context.Context, id uint) (*model.Client, error)
 	Create(ctx context.Context, c *dto.CreateClientDTO) (*model.Client, error)
+	Update(ctx context.Context, id uint, c *dto.UpdateClientDTO) (*model.Client, error)
+	Delete(ctx context.Context, id uint) error
 }
 
 type service struct {
@@ -69,4 +71,31 @@ func (s *service) Create(ctx context.Context, dto *dto.CreateClientDTO) (*model.
 		return nil, err
 	}
 	return &client, nil
+}
+
+func (s *service) Update(ctx context.Context, id uint, dto *dto.UpdateClientDTO) (*model.Client, error) {
+	client := model.Client{}
+
+	if dto.Name != nil {
+		client.Name = *dto.Name
+	}
+	if dto.Email != nil {
+		client.Email = *dto.Email
+	}
+	if dto.Phone != nil {
+		client.Phone = dto.Phone
+	}
+	if dto.Address != nil {
+		client.Address = dto.Address
+	}
+
+	if err := s.repo.Update(ctx, id, &client); err != nil {
+		return nil, err
+	}
+
+	return s.repo.GetByID(ctx, id)
+}
+
+func (s *service) Delete(ctx context.Context, id uint) error {
+	return s.repo.Delete(ctx, id)
 }

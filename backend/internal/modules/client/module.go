@@ -26,6 +26,8 @@ func (m *Module) Routes() chi.Router {
 
 	r.Get("/", m.Handler.List)
 	r.Post("/", m.Handler.Create)
+	r.Patch("/{id}", m.Handler.Update)
+	r.Delete("/{id}", m.Handler.Delete)
 
 	return r
 }

@@ -22,8 +22,20 @@ type HTTPConfig struct {
 
 // Load создаёт конфиг с подключением к БД через GORM
 func Load() (*Config, error) {
-	// Загружаем .env (если нет — не ошибка)
-	_ = godotenv.Load()
+	// Находим .env файл относительно текущего файла или рабочей директории
+	// Пробуем несколько путей
+	envPaths := []string{
+		".env",
+		"../.env",
+		"../../.env",
+		"./backend/.env",
+	}
+
+	for _, path := range envPaths {
+		if err := godotenv.Load(path); err == nil {
+			break
+		}
+	}
 
 	// Получаем ENV
 	dbUser := os.Getenv("DB_USER")
@@ -31,8 +43,11 @@ func Load() (*Config, error) {
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
-
 	httpAddr := os.Getenv("HTTP_ADDR")
+
+	if httpAddr == "" {
+		httpAddr = ":8080"
+	}
 
 	// Формируем DSN
 	dsn := fmt.Sprintf(
@@ -43,7 +58,7 @@ func Load() (*Config, error) {
 	// Подключение через GORM
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
 	cfg := &Config{

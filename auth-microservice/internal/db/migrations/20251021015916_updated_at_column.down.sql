@@ -1,1 +1,0 @@
-DROP FUNCTION IF EXISTS auth.updated_at_column();

@@ -1,4 +1,4 @@
-package client
+package auth
 
 import (
 	handler "backend/internal/modules/auth/handler"

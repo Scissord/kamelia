@@ -48,14 +48,14 @@ services:
   #   networks:
   #     - kong-net
 
-  auth-microservice:
-    image: auth-microservice
+  backend:
+    image: backend
     build:
-      context: ./auth-microservice
+      context: ./backend
     env_file:
-      - ./auth-microservice/.env
+      - ./backend/.env
     ports:
-      - "3001:3001"
+      - "8080:8080"
     depends_on:
       - commercial-db
       # - rabbitmq
@@ -64,8 +64,10 @@ services:
 
   commercial-db:
     image: postgres:17
-    env_file:
-      - ./commercial-db/.env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 322434
+      POSTGRES_DB: kamelia
     ports:
       - "5434:5432"
     volumes:

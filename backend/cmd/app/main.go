@@ -5,20 +5,20 @@ import (
 	"net/http"
 
 	"backend/internal/config"
+	"backend/internal/migrations"
 	"backend/internal/server"
 )
 
 func main() {
-	// Load возвращает (*Config, error)
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatal("Failed to load config:", err)
 	}
 
-	// db := cfg.DB
-	// if err := migrations.AutoMigrateAll(db); err != nil {
-	// 	log.Fatal("Migration failed:", err)
-	// }
+	db := cfg.DB
+	if err := migrations.AutoMigrateAll(db); err != nil {
+		log.Fatal("Migration failed:", err)
+	}
 
 	srv := server.New(cfg)
 

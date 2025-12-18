@@ -1,1 +1,0 @@
-DROP TYPE IF EXISTS auth.gender_type;

@@ -10,6 +10,7 @@ export type IRegistration = IUserLogin & {
   email?: string;
   phone?: string;
   birthday?: Date;
+  gender?: 'male' | 'female' | 'other';
   locale?: string;
   timezone?: string;
 };

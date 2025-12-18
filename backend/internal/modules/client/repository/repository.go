@@ -16,6 +16,8 @@ type Repository interface {
 	List(ctx context.Context, limit int, offset int, sort string) ([]model.Client, error)
 	GetByID(ctx context.Context, id uint) (*model.Client, error)
 	Create(ctx context.Context, client *model.Client) error
+	Update(ctx context.Context, id uint, client *model.Client) error
+	Delete(ctx context.Context, id uint) error
 }
 
 func NewRepository(db *gorm.DB) Repository {
@@ -45,4 +47,12 @@ func (r *repository) GetByID(ctx context.Context, id uint) (*model.Client, error
 		return nil, err
 	}
 	return &c, nil
+}
+
+func (r *repository) Update(ctx context.Context, id uint, client *model.Client) error {
+	return r.db.WithContext(ctx).Model(&model.Client{}).Where("id = ?", id).Updates(client).Error
+}
+
+func (r *repository) Delete(ctx context.Context, id uint) error {
+	return r.db.WithContext(ctx).Delete(&model.Client{}, id).Error
 }

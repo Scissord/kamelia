@@ -1,4 +1,4 @@
-CREATE TABLE auth."user" (
+CREATE TABLE IF NOT EXISTS auth."user" (
   id BIGSERIAL PRIMARY KEY,
   login VARCHAR(255) NOT NULL,
   password_hash VARCHAR(60) NOT NULL,

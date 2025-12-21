@@ -75,6 +75,14 @@ export const RegistrationForm = ({
         timezone,
       });
 
+      // don't like this
+      // need to make this:
+      // if (err.error === 'EMAIL_EXISTS') {
+      //   setEmailError('Email already exists');
+      // }
+      // if (err.error === 'PHONE_EXISTS') {
+      //   setPhoneError('Phone already exists');
+      // }
       if (typeof response === 'object') {
         // notification success
         notificationsStore.addNotification({

@@ -8,6 +8,8 @@ import { Label, Input, Button, Checkbox } from '@/components';
 import { useLogin } from '@/api';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { AuthService } from '@/services';
+import { useRouter } from 'next/navigation';
+import { useNotificationStore, useUserStore } from '@/store';
 
 const loginSchema = z.object({
   login: z
@@ -23,6 +25,11 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginForm = () => {
+  const router = useRouter();
+
+  const userStore = useUserStore.getState();
+  const notificationsStore = useNotificationStore.getState();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -36,9 +43,32 @@ export const LoginForm = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const user = await AuthService.login(data);
+      const response = await AuthService.login(data);
 
-      console.log('Успешная авторизация', user);
+      if (
+        typeof response === 'object' &&
+        response.user &&
+        response.access_token
+      ) {
+        // notification success
+        notificationsStore.addNotification({
+          type: 'default',
+          title: 'Успех!',
+          description: 'Пользователь успешно авторизован.',
+        });
+        console.log('Успешная авторизация', response);
+        userStore.setUser(response.user, response.access_token);
+        router.push('/clients');
+      } else {
+        if (typeof response === 'string') {
+          // notification error
+          notificationsStore.addNotification({
+            type: 'destructive',
+            title: 'Ошибка!',
+            description: response,
+          });
+        }
+      }
     } catch (err) {
       console.error(err);
     }

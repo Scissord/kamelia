@@ -15,8 +15,14 @@ type repository struct {
 }
 
 type Repository interface {
+	// Login
 	Login(ctx context.Context, user *dto.LoginUserDTO) (*userModel.User, error)
+	GetByLogin(
+		ctx context.Context,
+		login string,
+	) (*userModel.User, error)
 
+	// Registration
 	IsEmailExists(ctx context.Context, email string) (bool, error)
 	IsPhoneExists(ctx context.Context, phone string) (bool, error)
 

@@ -1,1 +1,1 @@
-DROP TABLE auth."user";
+DROP TABLE IF EXISTS auth."user";

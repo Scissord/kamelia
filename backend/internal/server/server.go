@@ -15,7 +15,7 @@ type Server struct {
 
 func New(cfg *config.Config) *Server {
 	r := chi.NewRouter()
-
+	// Rate limiting – защита от brute force login.
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)

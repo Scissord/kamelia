@@ -1,4 +1,4 @@
-CREATE TABLE auth.profile (
+CREATE TABLE IF NOT EXISTS auth.profile (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   first_name_encrypted BYTEA,

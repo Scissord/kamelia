@@ -30,8 +30,6 @@ func (r *repository) createProfile(
 		return err
 	}
 
-	// После Create, ID автоматически присваивается profile.ID
-
 	// Затем обновляем поля с шифрованием
 	return tx.WithContext(ctx).Model(profile).Updates(map[string]interface{}{
 		"first_name_encrypted":  gorm.Expr("pgp_sym_encrypt(?, ?)", profile.FirstName, key),

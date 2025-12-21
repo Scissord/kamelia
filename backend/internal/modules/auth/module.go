@@ -25,6 +25,7 @@ func (m *Module) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Post("/registration", m.Handler.Registration)
+	r.Post("/login", m.Handler.Login)
 
 	return r
 }

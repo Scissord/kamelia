@@ -1,1 +1,1 @@
-DROP TABLE auth.profile;
+DROP TABLE IF EXISTS auth.profile;

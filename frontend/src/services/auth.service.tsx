@@ -37,7 +37,7 @@ export const AuthService = {
     }
   },
 
-  async login(data: IUserLogin): Promise<LoginResult> {
+  async login(data: IUserLogin): Promise<LoginResult | string> {
     try {
       const response = await fetch(`${base_url}/auth/login`, {
         method: 'POST',
@@ -47,21 +47,19 @@ export const AuthService = {
         body: JSON.stringify(data),
       });
 
+      const result = await response.json();
       if (!response.ok) {
-        throw new Error('Login failed');
+        throw result;
       }
 
-      const result = await response.json();
+      return result;
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
+      if (apiErr?.error) {
+        return apiErr.error; // "EMAIL_EXISTS" | "PHONE_EXISTS"
+      }
 
-      return {
-        user: result.user,
-        access_token: result.accessToken,
-      };
-    } catch (error: unknown) {
-      return {
-        user: null,
-        access_token: null,
-      };
+      return 'UNKNOWN_ERROR';
     }
   },
 

@@ -1,1 +1,1 @@
-DROP TABLE app.client;
+DROP TABLE IF EXISTS app.client;

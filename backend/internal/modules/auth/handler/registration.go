@@ -35,7 +35,7 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 		log.Println("Registration service error:", err)
 		switch {
 		case errors.Is(err, authService.ErrEmailExists):
-			utils.WriteJSONError(w, http.StatusConflict, "User already exists")
+			utils.WriteJSONError(w, http.StatusConflict, "Email already exists")
 		case errors.Is(err, authService.ErrPhoneExists):
 			utils.WriteJSONError(w, http.StatusConflict, "Phone already exists")
 		default:

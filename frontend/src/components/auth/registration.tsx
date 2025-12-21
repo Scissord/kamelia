@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,23 +17,34 @@ import {
 } from '@/components';
 import { AuthService } from '@/services';
 import { ChevronDownIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
+import { formatDate } from '@/utils';
+import { useNotificationStore } from '@/store';
 
 const registrationSchema = z.object({
-  login: z.string().min(3, 'Логин должен быть не менее 3 символов'),
-  password: z.string().min(6, 'Пароль должен быть не менее 6 символов'),
-  email: z.string().email('Некорректный email').optional().or(z.literal('')),
-  phone: z
+  login: z
     .string()
-    .regex(/^\+?\d{10,15}$/, 'Некорректный телефон')
-    .optional()
-    .or(z.literal('')),
+    .min(3, 'Логин должен быть не менее 3 символов')
+    .max(32, 'Логин должен быть не более 32 символа'),
+  password: z
+    .string()
+    .min(8, 'Пароль должен быть не менее 8 символов')
+    .max(128, 'Пароль должен быть не более 128 символов'),
+  email: z.email('Некорректный email').optional().or(z.literal('')),
+  phone: z.e164('Некорректный формат телефона, Пример: +77777777777'),
   birthday: z.date().optional(),
-  gender: z.enum(['male', 'female', 'other']).optional(),
+  gender: z.enum(['male', 'female', 'other']),
 });
 
-type RegistrationFormData = z.infer<typeof registrationSchema>;
+type RegistrationFormData = z.infer<typeof registrationSchema> & {
+  phone?: string; // make optional
+};
 
-export const RegistrationForm = () => {
+export const RegistrationForm = ({
+  setTab,
+}: {
+  setTab: Dispatch<SetStateAction<string>>;
+}) => {
+  const notificationsStore = useNotificationStore.getState();
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -45,6 +56,11 @@ export const RegistrationForm = () => {
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     mode: 'onBlur',
+    defaultValues: {
+      gender: 'male',
+      phone: '',
+      email: '',
+    },
   });
 
   const onSubmit = async (data: RegistrationFormData) => {
@@ -52,13 +68,30 @@ export const RegistrationForm = () => {
       const locale = navigator.language || navigator.languages[0] || 'ru';
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      const user = await AuthService.registration({
+      const response = await AuthService.registration({
         ...data,
+        birthday: data.birthday ? formatDate(data.birthday) : undefined,
         locale,
         timezone,
       });
 
-      console.log('Успешная регистрация', user);
+      if (typeof response === 'object') {
+        // notification success
+        notificationsStore.addNotification({
+          type: 'default',
+          title: 'Успех!',
+          description: 'Пользователь успешно зарегестрирован.',
+        });
+        console.log('Успешная регистрация', response);
+        setTab('login');
+      } else {
+        // notification error
+        notificationsStore.addNotification({
+          type: 'destructive',
+          title: 'Ошибка!',
+          description: response,
+        });
+      }
     } catch (err) {
       console.error(err);
     }
@@ -151,7 +184,7 @@ export const RegistrationForm = () => {
                       id="birthday"
                       className="w-48 justify-between font-normal"
                     >
-                      {date ? date.toLocaleDateString() : 'Выберите дату'}
+                      {date ? formatDate(date) : 'Выберите дату'}
                       <ChevronDownIcon />
                     </Button>
                   </PopoverTrigger>

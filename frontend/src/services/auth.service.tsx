@@ -1,50 +1,45 @@
 import { IUser, IUserLogin, IRegistration } from '@/interfaces';
+import { base_url } from '@/utils';
 
 interface LoginResult {
   user: IUser | null;
   access_token: string | null;
 }
 
-interface IRegistrationResult {
-  user: IUser | null;
-  access_token: string | null;
-}
+type ApiError = {
+  error: string;
+};
 
 export const AuthService = {
-  async registration(data: IRegistration): Promise<IRegistrationResult> {
+  async registration(data: IRegistration): Promise<IUser | string> {
     try {
-      const response = await fetch(
-        'http://localhost:8080/api/auth/registration',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
+      const response = await fetch(`${base_url}/auth/registration`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
-
-      if (!response.ok) {
-        throw new Error('Registration failed');
-      }
+        body: JSON.stringify(data),
+      });
 
       const result = await response.json();
+      if (!response.ok) {
+        throw result;
+      }
 
-      return {
-        user: result.user,
-        access_token: result.accessToken,
-      };
-    } catch (error: unknown) {
-      return {
-        user: null,
-        access_token: null,
-      };
+      return result;
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
+      if (apiErr?.error) {
+        return apiErr.error; // "EMAIL_EXISTS" | "PHONE_EXISTS"
+      }
+
+      return 'UNKNOWN_ERROR';
     }
   },
 
   async login(data: IUserLogin): Promise<LoginResult> {
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch(`${base_url}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

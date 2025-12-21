@@ -8,8 +8,8 @@ export interface IUserLogin extends IUserBase {
 
 export type IRegistration = IUserLogin & {
   email?: string;
-  phone?: string;
-  birthday?: Date;
+  phone?: string | '';
+  birthday?: string;
   locale?: string;
   timezone?: string;
 };

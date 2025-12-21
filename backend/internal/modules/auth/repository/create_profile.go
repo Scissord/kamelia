@@ -14,25 +14,31 @@ func (r *repository) createProfile(
 	tx *gorm.DB,
 	profile *profileModel.Profile,
 ) error {
-
 	key := os.Getenv("PGP_SECRET")
 
-	data := map[string]interface{}{
-		"user_id": profile.UserID,
+	// Считаем хеши
+	profile.FirstNameHash = utils.Hash(profile.FirstName)
+	profile.LastNameHash = utils.Hash(profile.LastName)
+	profile.MiddleNameHash = utils.Hash(profile.MiddleName)
+	profile.EmailHash = utils.Hash(profile.Email)
+	profile.PhoneHash = utils.Hash(profile.Phone)
+	profile.BirthdayHash = utils.Hash(profile.Birthday)
 
-		"first_name_encrypted":  utils.Encrypt(profile.FirstName, key),
-		"last_name_encrypted":   utils.Encrypt(profile.LastName, key),
-		"middle_name_encrypted": utils.Encrypt(profile.MiddleName, key),
-		"email_encrypted":       utils.Encrypt(profile.Email, key),
-		"phone_encrypted":       utils.Encrypt(profile.Phone, key),
-		"birthday_encrypted":    utils.Encrypt(profile.Birthday, key),
-
-		"gender":   profile.Gender,
-		"locale":   profile.Locale,
-		"timezone": profile.Timezone,
+	// Сохраняем объект напрямую
+	err := tx.WithContext(ctx).Create(profile).Error
+	if err != nil {
+		return err
 	}
 
-	return tx.WithContext(ctx).
-		Model(&profileModel.Profile{}).
-		Create(data).Error
+	// После Create, ID автоматически присваивается profile.ID
+
+	// Затем обновляем поля с шифрованием
+	return tx.WithContext(ctx).Model(profile).Updates(map[string]interface{}{
+		"first_name_encrypted":  gorm.Expr("pgp_sym_encrypt(?, ?)", profile.FirstName, key),
+		"last_name_encrypted":   gorm.Expr("pgp_sym_encrypt(?, ?)", profile.LastName, key),
+		"middle_name_encrypted": gorm.Expr("pgp_sym_encrypt(?, ?)", profile.MiddleName, key),
+		"email_encrypted":       gorm.Expr("pgp_sym_encrypt(?, ?)", profile.Email, key),
+		"phone_encrypted":       gorm.Expr("pgp_sym_encrypt(?, ?)", profile.Phone, key),
+		"birthday_encrypted":    gorm.Expr("pgp_sym_encrypt(?, ?)", profile.Birthday, key),
+	}).Error
 }

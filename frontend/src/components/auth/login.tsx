@@ -10,8 +10,14 @@ import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { AuthService } from '@/services';
 
 const loginSchema = z.object({
-  login: z.string().min(3, 'Логин должен быть не менее 3 символов'),
-  password: z.string().min(6, 'Пароль должен быть не менее 6 символов'),
+  login: z
+    .string()
+    .min(3, 'Логин должен быть не менее 3 символов')
+    .max(32, 'Логин должен быть не более 32 символа'),
+  password: z
+    .string()
+    .min(8, 'Пароль должен быть не менее 8 символов')
+    .max(128, 'Пароль должен быть не более 128 символов'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;

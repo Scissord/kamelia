@@ -32,7 +32,7 @@ export function AuthenticationForm() {
               <LoginForm />
             </TabsContent>
             <TabsContent value="register">
-              <RegistrationForm />
+              <RegistrationForm setTab={setTab} />
             </TabsContent>
           </CardContent>
         </Tabs>

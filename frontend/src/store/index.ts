@@ -1,3 +1,3 @@
-export * from './user_store';
+export * from './user';
 export * from './confirmation';
 export * from './notification';

@@ -1,10 +1,14 @@
 package utils
 
-import "gorm.io/gorm"
+import (
+	"crypto/sha256"
+	"encoding/hex"
+)
 
-func Encrypt(value *string, key string) interface{} {
+func Hash(value *string) string {
 	if value == nil {
-		return nil
+		return ""
 	}
-	return gorm.Expr("pgp_sym_encrypt(?, ?)", *value, key)
+	sum := sha256.Sum256([]byte(*value))
+	return hex.EncodeToString(sum[:])
 }

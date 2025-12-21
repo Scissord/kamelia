@@ -3,33 +3,51 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 
 	"backend/internal/modules/auth/dto"
+	"backend/internal/utils"
+
+	authService "backend/internal/modules/auth/service"
 )
 
 func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
-	var u dto.RegistrationUserDTO
+	var user dto.RegistrationUserDTO
 
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	// Decoding body from request
+	// If empty return EOF
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		utils.WriteJSONError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	if err := validate.Struct(u); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	// Validate income data by dto
+	if err := validate.Struct(user); err != nil {
+		utils.WriteJSONError(w, http.StatusBadRequest, "Validation error")
 		return
 	}
 
-	user, err := h.service.Registration(context.Background(), &u)
+	// Call service for logic with db
+	userProfile, err := h.service.Registration(context.Background(), &user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println("Registration service error:", err)
+		switch {
+		case errors.Is(err, authService.ErrEmailExists):
+			utils.WriteJSONError(w, http.StatusConflict, "User already exists")
+		case errors.Is(err, authService.ErrPhoneExists):
+			utils.WriteJSONError(w, http.StatusConflict, "Phone already exists")
+		default:
+			utils.WriteJSONError(w, http.StatusInternalServerError, "Internal server error")
+		}
 		return
 	}
 
+	// Return response
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(user); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := json.NewEncoder(w).Encode(userProfile); err != nil {
+		utils.WriteJSONError(w, http.StatusBadRequest, "Internal Server Error")
 		return
 	}
 }

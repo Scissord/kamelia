@@ -1,8 +1,8 @@
 # Создать миграцию
-migrate create -ext sql -dir backend/internal/migrations create_clients_table
+migrate create -ext sql -dir internal/migrations create_clients_table
 
 # Применить миграции
-migrate -path "backend/internal/migrations" -database "postgres://postgres:322434@localhost:5432/kamelia?sslmode=disable" up
+migrate -path "internal/migrations" -database "postgres://postgres:322434@localhost:5432/kamelia?sslmode=disable" up
 
 # Откатить последнюю миграцию
-migrate -path "backend/internal/migrations" -database "postgres://postgres:322434@localhost:5432/kamelia?sslmode=disable" down
+migrate -path "internal/migrations" -database "postgres://postgres:322434@localhost:5432/kamelia?sslmode=disable" down

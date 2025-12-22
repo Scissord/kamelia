@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS auth.session;
+DROP TABLE IF EXISTS auth."session";

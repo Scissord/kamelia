@@ -1,0 +1,37 @@
+
+Я бы дал тебе такой план:
+
+Неделя 1
+
+Сделать Todo API на net/http без базы:
+
+GET all
+GET by id
+POST
+PUT
+DELETE
+Неделя 2
+
+Переделать с chi и разделить на файлы:
+
+handlers
+models
+router
+Неделя 3
+
+Подключить PostgreSQL:
+
+таблица tasks
+repository
+SQL-запросы
+Неделя 4
+
+Добавить:
+
+middleware
+config
+env
+graceful shutdown
+нормальные ошибки
+
+Это очень реалистичный и сильный путь.

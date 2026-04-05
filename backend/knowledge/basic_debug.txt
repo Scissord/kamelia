@@ -1,0 +1,20 @@
+package main
+
+import "fmt"
+
+type User struct {
+	Name string
+	Age  int
+}
+
+func main() {
+	u := User{Name: "Nur", Age: 20}
+	p := &u
+
+	fmt.Printf("u type=%T value=%+v\n", u, u)
+	fmt.Printf("p type=%T value=%v\n", p, p)
+	fmt.Printf("*p type=%T value=%+v\n", *p, *p)
+
+	p.Name = "Alex"
+	fmt.Printf("u after change through pointer: %+v\n", u)
+}

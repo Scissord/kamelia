@@ -28,7 +28,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Call service for logic with db
-	userProfile, err := h.service.Login(context.Background(), &user)
+	userProfile, err := h.service.Login(context.Background(), r, &user)
 	if err != nil {
 		log.Println("Registration service error:", err)
 		switch {

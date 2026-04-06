@@ -1,7 +1,8 @@
-CREATE TABLE IF NOT EXISTS auth.token (
-  id BIGSERIAL PRIMARY KEY,
-  user_id BIGINT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_token_user FOREIGN KEY (user_id) REFERENCES auth."user"(id) ON DELETE NO ACTION
-)
+CREATE TABLE IF NOT EXISTS auth."token" (
+  id bigserial PRIMARY KEY,
+  user_id bigint NOT NULL REFERENCES auth."user"(id),
+  refresh_token varchar(512) NOT NULL UNIQUE,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  revoked_at timestamptz
+);

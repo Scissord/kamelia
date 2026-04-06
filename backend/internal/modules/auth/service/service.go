@@ -4,14 +4,16 @@ import (
 	userProfileModel "backend/internal/modules/auth/model"
 	userModel "backend/internal/modules/user/model"
 	"context"
+	"net/http"
 
 	"backend/internal/modules/auth/dto"
 	"backend/internal/modules/auth/repository"
 )
 
 type Service interface {
-	Login(ctx context.Context, dto *dto.LoginUserDTO) (*userModel.User, error)
+	Login(ctx context.Context, r *http.Request, dto *dto.LoginUserDTO) (*userModel.User, error)
 	Registration(ctx context.Context, dto *dto.RegistrationUserDTO) (*userProfileModel.UserProfile, error)
+	// CreateSession(ctx context.Context, dto *dto)
 }
 
 type service struct {

@@ -2,16 +2,21 @@ package service
 
 import (
 	"backend/internal/modules/auth/dto"
+	sessionModel "backend/internal/modules/session/model"
 	userModel "backend/internal/modules/user/model"
 	utils "backend/internal/utils"
 	"context"
 	"errors"
+	"net/http"
+	"time"
 )
 
 var ErrInvalidCredentials = errors.New("Invalid credentials")
+var ErrInvalidSession = errors.New("Error while creating session")
 
 func (s *service) Login(
 	ctx context.Context,
+	r *http.Request,
 	dto *dto.LoginUserDTO,
 ) (*userModel.User, error) {
 	// 1. Check if login in base
@@ -26,6 +31,25 @@ func (s *service) Login(
 		return nil, ErrInvalidCredentials
 	}
 
+	// Если ты создаёшь сессию, убедись, что она уникальна для устройства.
+	// Можно хранить UserAgent + IP + expires_at.
+	// 3. Create session in db - auth.session
+	now := time.Now()
+
+	session_input := &sessionModel.Session{
+		UserID:     user.ID,
+		IPAddress:  utils.GetIP(r),
+		UserAgent:  r.UserAgent(),
+		LoginAt:    now,
+		LogoutAt:   nil,
+		LastSeenAt: &now,
+		IsActive:   true,
+	}
+	session_output, err := s.repo.CreateSession(ctx, session_input)
+	if err != nil {
+		return nil, ErrInvalidSession
+	}
+
 	return &userModel.User{
 		ID:        user.ID,
 		Login:     user.Login,
@@ -35,14 +59,11 @@ func (s *service) Login(
 	}, nil
 }
 
-// Если ты создаёшь сессию, убедись, что она уникальна для устройства.
-// Можно хранить UserAgent + IP + expires_at.
-// 4. Create session in db - auth.session
-// 6. Generate pair of tokens
-// 7. Create tokens in db - auth.token
-// 8. Set refresh_token to cookies
-// 9. Take profile - auth.profile.user_id
-// 10. Don't forget to delete password_hash
+// 4. Generate pair of tokens
+// 5. Create tokens in db - auth.token
+// 6. Set refresh_token to cookies
+// 7. Take profile - auth.profile.user_id
+// 8. Don't forget to delete password_hash
 // return {
 // 	user: {
 // 		...user,

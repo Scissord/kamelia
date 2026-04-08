@@ -1,0 +1,171 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+)
+
+const PORT = ":8080"
+
+type Task struct {
+	ID    int    `json:"id"`
+	Title string `json:"title"`
+	Done  bool   `json:"done"`
+}
+
+type UpdateTaskInput struct {
+	Title *string `json:"title"`
+	Done  *bool   `json:"done"`
+}
+
+var tasks = []Task{
+	{ID: 1, Title: "Learn Go", Done: false},
+	{ID: 2, Title: "Write Rest Api", Done: false},
+	{ID: 3, Title: "Practice JSON", Done: true},
+}
+
+func main() {
+	http.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getTasks(w)
+		case http.MethodPost:
+			createTask(w, r)
+		default:
+			writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		}
+	})
+
+	http.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
+		id, err := getIDFromPath(r.URL.Path)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, "invalid task id")
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			getTaskById(w, id)
+		case http.MethodPatch:
+			updateTask(w, r, id)
+		case http.MethodDelete:
+			deleteTask(w, id)
+		default:
+			writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		}
+	})
+
+	fmt.Println("Server started on port 8080")
+	err := http.ListenAndServe(PORT, nil)
+	if err != nil {
+		fmt.Println("Server error:", err)
+	}
+}
+
+func getTasks(w http.ResponseWriter) {
+	writeJSON(w, http.StatusOK, tasks)
+}
+
+func createTask(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		writeError(w, http.StatusUnsupportedMediaType, "content type must be application/json")
+		return
+	}
+
+	var newTask Task
+
+	err := json.NewDecoder(r.Body).Decode(&newTask)
+	if err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Printf("Parsed struct: %+v\n", newTask)
+
+	if newTask.Title == "" {
+		http.Error(w, "title is required", http.StatusBadRequest)
+		return
+	}
+
+	newTask.ID = len(tasks) + 1
+	tasks = append(tasks, newTask)
+
+	writeJSON(w, http.StatusCreated, newTask)
+}
+
+func getTaskById(w http.ResponseWriter, id int) {
+
+	for _, task := range tasks {
+		if task.ID == id {
+			writeJSON(w, http.StatusOK, task)
+			return
+		}
+	}
+
+	writeError(w, http.StatusNotFound, "task not found")
+}
+
+func deleteTask(w http.ResponseWriter, id int) {
+	for i, task := range tasks {
+		if task.ID == id {
+			tasks = append(tasks[:i], tasks[i+1:]...)
+
+			writeJSON(w, http.StatusOK, map[string]string{
+				"message": "task deleted",
+			})
+			return
+		}
+	}
+
+	writeError(w, http.StatusNotFound, "task not found")
+}
+
+func updateTask(w http.ResponseWriter, r *http.Request, id int) {
+	var input UpdateTaskInput
+
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+
+	for i, task := range tasks {
+		if task.ID == id {
+			if input.Title != nil {
+				tasks[i].Title = *input.Title
+			}
+			if input.Done != nil {
+				tasks[i].Done = *input.Done
+			}
+
+			writeJSON(w, http.StatusOK, tasks[i])
+			return
+		}
+	}
+
+	writeError(w, http.StatusNotFound, "task not found")
+}
+
+func getIDFromPath(path string) (int, error) {
+	idStr := strings.TrimPrefix(path, "/tasks/")
+	// Atoi = ASCII to integer
+	// То есть функция берёт строку и пытается превратить её в int.
+	return strconv.Atoi(idStr)
+}
+
+func writeJSON(w http.ResponseWriter, status int, data any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(data)
+}
+
+func writeError(w http.ResponseWriter, status int, message string) {
+	writeJSON(w, status, map[string]string{
+		"error": message,
+	})
+}

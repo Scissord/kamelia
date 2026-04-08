@@ -1,129 +1,37 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
+	"task-app/internal/router"
+
+	"github.com/jackc/pgx/v5"
 )
 
 const PORT = ":8080"
 
-type Task struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
-	Done  bool   `json:"done"`
-}
-
-var tasks = []Task{
-	{ID: 1, Title: "Learn Go", Done: false},
-	{ID: 2, Title: "Write Rest Api", Done: false},
-	{ID: 3, Title: "Practice JSON", Done: true},
-}
-
 func main() {
-	http.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			getTasks(w)
-		case http.MethodPost:
-			createTask(w, r)
-		default:
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	conn, err := pgx.Connect(context.Background(), "postgresql://postgres:322434@localhost:5432/kamelia")
+	if err != nil {
+		fmt.Println("Database connection error:", err)
+		return
+	}
+	defer conn.Close(context.Background())
 
-	http.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
-		id, err := getIDFromPath(r.URL.Path)
-		if err != nil {
-			http.Error(w, "invalid task id", http.StatusBadRequest)
-			return
-		}
+	err = conn.Ping(context.Background())
+	if err != nil {
+		fmt.Println("Database ping error:", err)
+		return
+	}
 
-		switch r.Method {
-		case http.MethodGet:
-			getTaskById(w, id)
-		case http.MethodPatch:
-			updateTask(w, r, id)
-		case http.MethodDelete:
-			deleteTask(w, id)
-		}
-	})
+	fmt.Println("Connected to PostgreSQL")
+
+	r := router.InitRouter(conn)
 
 	fmt.Println("Server started on port 8080")
-	err := http.ListenAndServe(PORT, nil)
+	err = http.ListenAndServe(PORT, r)
 	if err != nil {
 		fmt.Println("Server error:", err)
 	}
-}
-
-func getTasks(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/json")
-
-	err := json.NewEncoder(w).Encode(tasks)
-	if err != nil {
-		http.Error(w, "failed to encode json", http.StatusInternalServerError)
-		return
-	}
-}
-
-func createTask(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	var newTask Task
-
-	err := json.NewDecoder(r.Body).Decode(&newTask)
-	if err != nil {
-		http.Error(w, "invalid json", http.StatusBadRequest)
-		return
-	}
-
-	fmt.Printf("Parsed struct: %+v\n", newTask)
-
-	if newTask.Title == "" {
-		http.Error(w, "title is required", http.StatusBadRequest)
-		return
-	}
-
-	newTask.ID = len(tasks) + 1
-	tasks = append(tasks, newTask)
-
-	w.WriteHeader(http.StatusCreated)
-
-	err = json.NewEncoder(w).Encode(newTask)
-	if err != nil {
-		http.Error(w, "failed to encode json", http.StatusInternalServerError)
-		return
-	}
-}
-
-func getTaskById(w http.ResponseWriter, id int) {
-	w.Header().Set("Content-Type", "application/json")
-
-	for _, task := range tasks {
-		if task.ID == id {
-			err := json.NewEncoder(w).Encode(task)
-			if err != nil {
-				http.Error(w, "failed to encode json", http.StatusInternalServerError)
-			}
-			return
-		}
-	}
-
-	http.Error(w, "task not found", http.StatusNotFound)
-}
-
-func updateTask(w http.ResponseWriter, r *http.Request, id int) {
-	w.Header().Set("Content-Type", "application/json")
-
-}
-
-func deleteTask(w http.ResponseWriter, id int) {
-
-}
-
-func getIDFromPath(path string) (int, error) {
-	idStr := strings.TrimPrefix(path, "/tasks/")
-	return strconv.Atoi(idStr)
 }

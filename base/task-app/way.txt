@@ -1,7 +1,7 @@
 
 Я бы дал тебе такой план:
 
-Неделя 1
+Неделя 1 completed
 
 Сделать Todo API на net/http без базы:
 
@@ -13,6 +13,7 @@ DELETE
 Неделя 2
 
 Переделать с chi и разделить на файлы:
+go get github.com/go-chi/chi/v5
 
 handlers
 models

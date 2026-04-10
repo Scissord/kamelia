@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"task-app/internal/config"
 	"task-app/internal/router"
 
 	"github.com/jackc/pgx/v5"
 )
 
-const PORT = ":8080"
-
 func main() {
-	conn, err := pgx.Connect(context.Background(), "postgresql://postgres:322434@localhost:5432/kamelia")
+	cfg := config.Load()
+
+	conn, err := pgx.Connect(context.Background(), cfg.DBURL)
 	if err != nil {
 		fmt.Println("Database connection error:", err)
 		return
@@ -30,7 +31,7 @@ func main() {
 	r := router.InitRouter(conn)
 
 	fmt.Println("Server started on port 8080")
-	err = http.ListenAndServe(PORT, r)
+	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {
 		fmt.Println("Server error:", err)
 	}

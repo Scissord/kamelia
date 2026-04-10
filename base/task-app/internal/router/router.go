@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"task-app/internal/handlers"
+	"task-app/internal/repository"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
@@ -11,14 +12,15 @@ import (
 func InitRouter(db *pgx.Conn) http.Handler {
 	r := chi.NewRouter()
 
-	h := handlers.NewHandler(db)
+	repo := repository.NewTaskRepository(db)
+	hand := handlers.NewHandler(repo)
 
-	r.Get("/tasks", h.GetTasks)
-	r.Post("/tasks", h.CreateTask)
+	r.Get("/tasks", hand.GetTasks)
+	r.Post("/tasks", hand.CreateTask)
 
-	r.Get("/tasks/{id}", h.GetTaskById)
-	r.Delete("/tasks/{id}", h.DeleteTask)
-	r.Patch("/tasks/{id}", h.UpdateTask)
+	r.Get("/tasks/{id}", hand.GetTaskById)
+	r.Delete("/tasks/{id}", hand.DeleteTask)
+	r.Patch("/tasks/{id}", hand.UpdateTask)
 
 	return r
 }

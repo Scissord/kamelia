@@ -1,57 +1,30 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"task-app/internal/models"
+	"task-app/internal/repository"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 )
 
 type Handler struct {
-	DB *pgx.Conn
+	REPO *repository.TaskRepository
 }
 
-func NewHandler(db *pgx.Conn) *Handler {
-	return &Handler{DB: db}
+func NewHandler(repo *repository.TaskRepository) *Handler {
+	return &Handler{REPO: repo}
 }
 
 func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.DB.Query(context.Background(), `
-		SELECT
-			id,
-			title,
-			done
-		FROM tasks
-		ORDER BY id
-	`)
+	tasks, err := h.REPO.GetTasks()
 
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to fetch tasks")
-		return
-	}
-	defer rows.Close()
-
-	var tasks []models.Task
-
-	for rows.Next() {
-		var task models.Task
-
-		err := rows.Scan(&task.ID, &task.Title, &task.Done)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "failed to scan task")
-			return
-		}
-
-		tasks = append(tasks, task)
-	}
-
-	if rows.Err() != nil {
-		writeError(w, http.StatusInternalServerError, "rows iteration error")
 		return
 	}
 
@@ -79,33 +52,11 @@ func (h *Handler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var id int
-
-	err = h.DB.QueryRow(
-		context.Background(),
-		`
-			INSERT INTO tasks (
-				title,
-				done
-			) VALUES (
-				$1,
-				$2
-			)
-			RETURNING id
-		`,
-		input.Title,
-		input.Done,
-	).Scan(&id)
+	task, err := h.REPO.CreateTask(input)
 
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to create task")
 		return
-	}
-
-	task := models.Task{
-		ID:    id,
-		Title: input.Title,
-		Done:  input.Done,
 	}
 
 	writeJSON(w, http.StatusCreated, task)
@@ -118,20 +69,7 @@ func (h *Handler) GetTaskById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var task models.Task
-
-	err = h.DB.QueryRow(
-		context.Background(),
-		`
-			SELECT
-				id,
-				title,
-				done
-			FROM tasks
-			WHERE id = $1
-		`,
-		id,
-	).Scan(&task.ID, &task.Title, &task.Done)
+	task, err := h.REPO.GetTaskById(id)
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -152,22 +90,10 @@ func (h *Handler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.DB.Exec(
-		context.Background(),
-		`
-			DELETE FROM tasks
-			WHERE id = $1
-		`,
-		id,
-	)
+	err = h.REPO.DeleteTask(id)
 
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to delete task")
-		return
-	}
-
-	if result.RowsAffected() == 0 {
-		writeError(w, http.StatusNotFound, "task not found")
 		return
 	}
 
@@ -192,19 +118,7 @@ func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var task models.Task
-	err = h.DB.QueryRow(
-		context.Background(),
-		`
-			SELECT
-				id,
-				title,
-				done
-			FROM tasks
-			WHERE id = $1
-		`,
-		id,
-	).Scan(&task.ID, &task.Title, &task.Done)
+	task, err := h.REPO.GetTaskById(id)
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -222,18 +136,7 @@ func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		task.Done = *input.Done
 	}
 
-	_, err = h.DB.Exec(
-		context.Background(),
-		`
-			UPDATE tasks
-			SET title = $2,
-					done = $3
-			WHERE id = $1
-		`,
-		id,
-		task.Title,
-		task.Done,
-	)
+	err = h.REPO.UpdateTask(task)
 
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update task")

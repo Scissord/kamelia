@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -13,7 +14,10 @@ type Config struct {
 }
 
 func Load() *Config {
-	_ = godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Ошибка загрузки .env:", err)
+	}
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {

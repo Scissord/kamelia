@@ -1,0 +1,8 @@
+CREATE TABLE auth.token (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMP NOT NULL,
+  revoked_at TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);

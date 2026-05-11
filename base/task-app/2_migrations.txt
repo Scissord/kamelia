@@ -1,0 +1,14 @@
+1) CLI FOR CMD:
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+2) CREATE MIGRATION:
+migrate create -ext sql -dir migrations table_name
+
+3) USE MIGRATIONS:
+migrate -path migrations -database "postgresql://postgres:322434@localhost:5432/kamelia?sslmode=disable" up
+
+4) ROLLBACK LAST MIGRATION:
+migrate -path migrations -database "postgresql://postgres:322434@localhost:5432/kamelia?sslmode=disable" down 1
+
+5) ROLLBACK ALL MIGRATIONS:
+migrate -path migrations -database "postgresql://postgres:322434@localhost:5432/kamelia?sslmode=disable" down

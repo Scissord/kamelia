@@ -2,12 +2,18 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
-	"task-app/internal/config"
-	"task-app/internal/router"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v5"
+
+	"task-app/internal/config"
+	"task-app/internal/router"
 )
 
 func main() {
@@ -15,24 +21,50 @@ func main() {
 
 	conn, err := pgx.Connect(context.Background(), cfg.DBURL)
 	if err != nil {
-		fmt.Println("Database connection error:", err)
+		fmt.Println("database connection error:", err)
 		return
 	}
-	defer conn.Close(context.Background())
-
-	err = conn.Ping(context.Background())
-	if err != nil {
-		fmt.Println("Database ping error:", err)
-		return
-	}
-
 	fmt.Println("Connected to PostgreSQL")
 
-	r := router.InitRouter(conn)
+	r := router.InitRouter(conn, cfg)
 
-	fmt.Println("Server started on port 8080")
-	err = http.ListenAndServe(cfg.Port, r)
-	if err != nil {
-		fmt.Println("Server error:", err)
+	server := &http.Server{
+		Addr:    cfg.Port,
+		Handler: r,
+	}
+
+	serverErrors := make(chan error, 1)
+
+	go func() {
+		fmt.Println("Server started on port", cfg.Port)
+
+		err := server.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serverErrors <- err
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-serverErrors:
+		fmt.Println("server error:", err)
+
+	case sig := <-quit:
+		fmt.Println("shutdown signal received:", sig)
+
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			fmt.Println("server shutdown error:", err)
+		}
+
+		if err := conn.Close(context.Background()); err != nil {
+			fmt.Println("database close error:", err)
+		}
+
+		fmt.Println("server stopped gracefully")
 	}
 }

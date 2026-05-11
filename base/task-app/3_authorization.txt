@@ -1,0 +1,99 @@
+👉 JWT auth
+
+Следующий огромный скачок.
+
+Ты научишься:
+
+login/register
+password hashing
+middleware auth
+bearer token
+context user
+
+Это прям следующий backend-level.
+
+CREATE TABLE auth.user (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE auth.token (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMP NOT NULL,
+  revoked_at TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+POST /auth/register
+POST /auth/login
+POST /auth/refresh
+POST /auth/logout
+GET  /me
+
+Бизнес-логика
+Register
+
+Клиент отправляет:
+
+{
+  "email": "test@mail.com",
+  "password": "12345678"
+}
+
+Сервер:
+
+валидирует email/password
+проверяет, что email не занят
+хеширует пароль через bcrypt
+создаёт пользователя
+
+Login
+ищем пользователя по email
+сравниваем пароль с password_hash
+создаём access_token
+создаём refresh_token
+хешируем refresh token и сохраняем в БД
+возвращаем токены
+
+Refresh
+берёшь refresh token из cookie
+хешируешь его
+ищешь hash в refresh_tokens
+проверяешь:
+token существует
+revoked_at IS NULL
+expires_at > NOW()
+старый token помечаешь как revoked
+создаёшь новый refresh token
+сохраняешь новый hash новой строкой
+отдаёшь новый access token в JSON
+новый refresh token садишь в cookie
+
+Logout
+клиент отправляет refresh token
+сервер находит его hash
+ставит revoked_at = NOW()
+
+Protected routes
+
+Клиент отправляет:
+
+Authorization: Bearer ACCESS_TOKEN
+
+Middleware:
+
+достаёт token из header
+проверяет подпись
+проверяет срок жизни
+достаёт user_id
+кладёт user_id в context
+handler может взять user_id из context
+
+features:
+logout all devices
+admin panel to create users

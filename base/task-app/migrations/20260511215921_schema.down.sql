@@ -1,0 +1,3 @@
+DROP SCHEMA app;
+
+DROP SCHEMA auth;

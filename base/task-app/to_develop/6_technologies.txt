@@ -1,0 +1,8 @@
+1) POSTGRESQL
+2) REDIS
+3) KAFKA/RABBITMQ
+4) SWAGGER
+5) K8S
+6) Prometheus + Grafana + ELK
+7) Unit + Integration tests
+8) GitLab CI/CD pipeline

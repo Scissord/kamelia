@@ -23,6 +23,9 @@ func InitRouter(db *pgx.Conn, cfg *config.Config) http.Handler {
 	taskRepo := repository.NewTaskRepository(db)
 	taskHand := handlers.NewTaskHandler(taskRepo)
 
+	clientRepo := repository.NewClientRepository(db)
+	clientHand := handlers.NewClientHandler(clientRepo)
+
 	userRepo := repository.NewUserRepository(db)
 	tokenRepo := repository.NewTokenRepository(db)
 	authHandler := handlers.NewAuthHandler(userRepo, tokenRepo, cfg)
@@ -47,6 +50,15 @@ func InitRouter(db *pgx.Conn, cfg *config.Config) http.Handler {
 		r.Get("/{id}", taskHand.GetTaskById)
 		r.Delete("/{id}", taskHand.DeleteTask)
 		r.Patch("/{id}", taskHand.UpdateTask)
+	})
+
+	r.Route("clients", func(r chi.Router) {
+		r.Get("/", clientHand.GetClients)
+		r.Post("/", clientHand.CreateClient)
+
+		r.Get("/{id}", clientHand.GetClientById)
+		r.Delete("/{id}", clientHand.DeleteClient)
+		r.Patch("/{id}", clientHand.UpdateClient)
 	})
 
 	return r

@@ -3,11 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"task-app/internal/models"
 	"task-app/internal/repository"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -143,9 +141,4 @@ func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, task)
-}
-
-func getIDFromChi(r *http.Request) (int, error) {
-	idStr := chi.URLParam(r, "id")
-	return strconv.Atoi(idStr)
 }

@@ -1,3 +1,5 @@
 DROP SCHEMA app;
 
 DROP SCHEMA auth;
+
+DROP SCHEMA ref;

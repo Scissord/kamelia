@@ -1,1 +1,263 @@
-1) Clients - default rest API
+Marketplace объявлений (Kolesa/Krisha OLX style)
+
+Типа:
+пользователь
+объявление
+категории
+фото
+чат
+избранное
+поиск
+
+Без:
+
+платежных шлюзов
+складов
+ERP
+бухгалтерии
+
+2. Но при этом можно использовать ВСЕ технологии
+PostgreSQL
+users
+listings
+favorites
+messages
+reviews
+Redis
+cache listings
+rate limiting
+JWT blacklist
+sessions
+online users
+Kafka / RabbitMQ
+
+events:
+
+listing_created
+listing_viewed
+message_sent
+user_registered
+S3
+
+хранение:
+
+изображений
+аватарок
+документов
+
+Можно использовать:
+
+MinIO локально
+AWS S3 потом
+Elasticsearch
+
+Поиск объявлений:
+
+"2 комнатная квартира астана"
+Kubernetes
+
+Разделяешь сервисы:
+
+auth-service
+listing-service
+chat-service
+notification-service
+gateway
+Это выглядит как РЕАЛЬНАЯ enterprise система
+
+И recruiters это любят.
+
+Идея
+
+Платформа объявлений:
+
+квартиры
+машины
+услуги
+фриланс
+техника
+
+Можно начать с одного домена:
+
+real estate
+
+или
+
+cars
+Архитектура
+API Gateway
+/api/v1/*
+auth-service
+функции:
+register
+login
+refresh token
+RBAC
+стек:
+JWT
+Redis sessions
+PostgreSQL
+listing-service
+
+функции:
+create listing
+update
+search
+favorites
+
+стек:
+PostgreSQL
+Redis cache
+Elasticsearch
+media-service
+
+функции:
+upload image
+resize
+store in S3
+
+стек:
+MinIO
+async workers
+notification-service
+функции:
+email
+sms
+push
+
+стек:
+Kafka consumer
+chat-service
+функции:
+websocket chat
+unread count
+
+стек:
+Redis pub/sub
+analytics-service
+функции:
+views
+clicks
+popularity
+
+стек:
+Kafka
+ClickHouse later
+Какие технологии ты реально покажешь
+Backend
+
+✅ Go
+✅ Clean Architecture
+✅ DDD basics
+✅ Repository pattern
+✅ Middleware
+✅ REST API
+✅ Swagger/OpenAPI
+
+Infra
+
+✅ Docker
+✅ Docker Compose
+✅ Kubernetes
+✅ Helm
+✅ Nginx ingress
+
+DevOps
+
+✅ GitLab CI/CD
+✅ Deploy pipelines
+✅ Healthchecks
+✅ Rolling updates
+
+Databases
+
+✅ PostgreSQL
+✅ Redis
+✅ Elasticsearch
+✅ S3/MinIO
+
+Async
+
+✅ Kafka
+✅ Event-driven architecture
+
+Observability
+
+✅ Prometheus
+✅ Grafana
+✅ ELK stack
+✅ tracing later (Jaeger)
+
+Как делать ПРАВИЛЬНО
+Этап 1 — Monolith
+
+Сначала НЕ микросервисы.
+
+Сделай:
+
+modular monolith
+
+Это очень важно.
+
+Структура
+/internal
+    /auth
+    /listing
+    /chat
+    /notification
+/pkg
+/cmd
+Потом выделишь сервисы
+
+Когда поймешь boundaries.
+
+Это уже senior-подход.
+
+Как выглядит roadmap
+1 месяц
+Core
+auth
+CRUD listings
+PostgreSQL
+migrations
+Swagger
+
+2 месяц
+Infra
+Redis
+Docker Compose
+tests
+logging
+CI/CD
+
+3 месяц
+Enterprise
+Kafka
+async notifications
+MinIO
+Kubernetes
+
+4 месяц
+Advanced
+metrics
+tracing
+Elasticsearch
+websocket chat
+Что особенно ценят работодатели
+
+Не "идею".
+
+А:
+
+architecture
+observability
+clean code
+infra
+scalability
+testing
+async flows
+Самая сильная формулировка для CV
+
+Built production-style marketplace platform using Go microservices architecture with PostgreSQL, Redis, Kafka, Docker, Kubernetes, CI/CD and observability stack.
+
+Это выглядит уже как middle+/senior portfolio.

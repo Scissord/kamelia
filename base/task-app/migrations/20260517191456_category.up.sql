@@ -1,0 +1,8 @@
+CREATE TABLE ref.category (
+  id SERIAL PRIMARY KEY,
+  title NOT NULL VARCHAR(512),
+  description NOT NULL VARCHAR(2048),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  deleted_at TIMESTAMP
+);

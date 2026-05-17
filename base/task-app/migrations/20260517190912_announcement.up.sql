@@ -1,0 +1,13 @@
+CREATE TABLE app.announcement (
+  id SERIAL PRIMARY KEY,
+  owner_id BIGINT NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
+  customer_id BIGINT NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
+  title NOT NULL VARCHAR(512),
+  description NOT NULL VARCHAR(2048),
+  rating SMALLINT NOT NULL DEFAULT 0,
+  location_id BIGINT NOT NULL REFERENCES ref.location(id),
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  deleted_at TIMESTAMP
+);

@@ -26,6 +26,12 @@ func InitRouter(db *pgx.Conn, cfg *config.Config) http.Handler {
 	clientRepo := repository.NewClientRepository(db)
 	clientHand := handlers.NewClientHandler(clientRepo)
 
+	// categoryRepo := repository.NewCategoryRepository(db)
+	// categoryHand := handlers.NewCategoryHandler(categoryRepo)
+
+	// announcementRepo := repository.NewAnnouncementRepository(db)
+	// announcementHand := handlers.AnnouncementHandler(announcementRepo)
+
 	userRepo := repository.NewUserRepository(db)
 	tokenRepo := repository.NewTokenRepository(db)
 	authHandler := handlers.NewAuthHandler(userRepo, tokenRepo, cfg)
@@ -42,6 +48,18 @@ func InitRouter(db *pgx.Conn, cfg *config.Config) http.Handler {
 			r.Get("/me", authHandler.Me)
 		})
 	})
+
+	// 1. MAIN PAGE
+	// GET CATEGORIES
+	// GET ANNOUNCEMENT - ?sort=popular
+
+	// r.Route("/categories", func(r chi.Router) {
+	// 	r.Get("/", categoryHand.GetCategories)
+	// })
+
+	// r.Route("/announcements", func(r chi.Router) {
+	// 	r.Get("/", announcementHand.GetAnnouncement)
+	// })
 
 	r.Route("/tasks", func(r chi.Router) {
 		r.Get("/", taskHand.GetTasks)
